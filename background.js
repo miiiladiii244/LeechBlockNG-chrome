@@ -222,11 +222,10 @@ function retrieveOptions(update) {
 		gAllFocused = gOptions["allFocused"];
 		gUseDocFocus = gOptions["useDocFocus"];
 
-		createRegExps();
-		refreshMenus();
-		refreshTicker();
-		loadSiteLists();
-		updateIcon();
+                createRegExps();
+                refreshMenus();
+                refreshTicker();
+                updateIcon();
 
 		// Keep track of saved time data to avoid unnecessary writes
 		for (let set = 1; set <= gNumSets; set++) {
@@ -240,61 +239,7 @@ function retrieveOptions(update) {
 	}
 }
 
-// Load lists of sites if URLs specified
-//
-function loadSiteLists() {
-	//log("loadSiteLists");
 
-	let time = Date.now();
-
-	for (let set = 1; set <= gNumSets; set++) {
-		// Get sites for block set from HTTP source (if specified)
-		let sitesURL = gOptions[`sitesURL${set}`];
-		if (sitesURL) {
-			sitesURL = sitesURL.replace(/\$S/, set).replace(/\$T/, time);
-			fetch(sitesURL).then(
-				(response) => {
-					if (response.status == 200) {
-						response.text().then((text) => { onLoad(set, text); });
-					} else {
-						warn("Cannot load sites from URL: " + sitesURL);
-					}
-				},
-				(reason) => {
-					warn("Cannot load sites from URL: " + sitesURL);
-				});
-		}
-	}
-
-	function onLoad(set, sites) {
-		if (set && sites) {
-			sites = cleanSites(sites);
-
-			// Get regular expressions to match sites
-			let regexps = getRegExpSites(sites, gOptions["matchSubdomains"]);
-
-			// Update options
-			gOptions[`sites${set}`] = sites;
-			gOptions[`blockRE${set}`] = regexps.block;
-			gOptions[`allowRE${set}`] = regexps.allow;
-			gOptions[`referRE${set}`] = regexps.refer;
-			gOptions[`keywordRE${set}`] = regexps.keyword;
-
-			createRegExps();
-
-			// Save updated options to local storage
-			let options = {};
-			options[`sites${set}`] = sites;
-			options[`blockRE${set}`] = regexps.block;
-			options[`allowRE${set}`] = regexps.allow;
-			options[`referRE${set}`] = regexps.refer;
-			options[`keywordRE${set}`] = regexps.keyword;
-			gStorage.set(options).catch(
-				function (error) { warn("Cannot set options: " + error); }
-			);
-		}
-	}
-}
 
 // Save time data to storage
 //
